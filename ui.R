@@ -1,6 +1,8 @@
 library(shiny)
+library(shinythemes)
 
 navbarPage("Interest Rates",
+           theme = shinytheme('yeti'),
   tabPanel("Interest Rates 1",
     sidebarLayout(
       sidebarPanel(
