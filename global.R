@@ -1,6 +1,5 @@
 library(tidyverse)
 library(tidyquant)
-library(RTL)
 library(purrr)
 
 ### Some of the code below will be moved to server.R
