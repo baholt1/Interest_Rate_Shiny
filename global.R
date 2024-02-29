@@ -1,6 +1,7 @@
 library(tidyverse)
 library(tidyquant)
 library(purrr)
+library(RTL)
 
 ### Some of the code below will be moved to server.R
 ## use full vector when c++ function is done
