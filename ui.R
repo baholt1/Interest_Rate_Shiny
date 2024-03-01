@@ -16,7 +16,8 @@ navbarPage("Interest Rates",
           max = 30,
           value = 10),
         ),
-    mainPanel()
+    mainPanel(
+      dataTableOutput("table"))
     )
   ),
   tabPanel("Interest Rates 2",

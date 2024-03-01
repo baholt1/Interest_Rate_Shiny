@@ -43,8 +43,8 @@ server <- function(input, output) {
   testData <- reactive({
     rateData %>% 
     dplyr::slice(1:5) %>% 
-    dplyr::mutate(bondPrice = purrr::map2(rate, maturity, priceBond)) %>% 
-    tidyr::unnest()
+    dplyr::mutate(bondPrice = purrr::map2(rate, maturity, priceBond())) %>% 
+    tidyr::unnest(cols = bondPrice)
   })
  
   output$table <- shiny::renderDataTable({
