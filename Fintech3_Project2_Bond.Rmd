@@ -9,17 +9,11 @@ output: html_document
 
 ```{r}
 
+library(rootSolve)
 
 # duration is the measure of the bond's sensitivity to interest rate changess
 
 # convexity, higher convexity means bond price more sensitiy, curve is steeper moves are more drastic 
-
-# final cal 
-
-portfolio_dur <- portfolio_duration(amounts, durations)
-cat("Portfolio Duration:", portfolio_dur, "\n")
-
-# duration and convexity function 
 
 calculate_bond_duration_and_convexity <- function(coupon_rate, years_to_maturity, yield_to_maturity) {
 
@@ -86,7 +80,7 @@ portfolio_duration <- function(amounts, durations) {
 
 ```
 
-# (YTM) of a bond - WORK IN PROGRESS
+# (YTM) of a bond -
 
 ```{r}
 
@@ -116,7 +110,6 @@ calculate_YTM <- function(price, face_value, coupon_payment, years_to_maturity, 
   }
   
   # (YTM) 
-  
   ytm <- uniroot(present_value, 
                  interval = c(0, 1),
                  price = price, 
@@ -128,6 +121,7 @@ calculate_YTM <- function(price, face_value, coupon_payment, years_to_maturity, 
   return(ytm * frequency * 100)  # YTM to percentage
 }
 
+# user inputs 
 price <- 950   # current price 
 face_value <- 1000  # FV
 coupon_payment <- 50  # annual coupon 
