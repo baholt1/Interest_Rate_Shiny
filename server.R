@@ -1,6 +1,6 @@
 server <- function(input, output) {
 
-  ## these values can be user entries in the app
+  ## these values are user entries in the app
   coupon <- reactive({input$coupon})
   T2M <- reactive({input$T2M})
   step <- 0.0001  # in bps
