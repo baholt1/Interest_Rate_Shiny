@@ -11,7 +11,13 @@ navbarPage("Interest Rates",
           "Rates:",
           min = 0.01,
           max = 0.10,
-          value = 0.05)
+          value = 0.05),
+        sliderInput(
+          "t2m",
+          "Time to Maturity:",
+          min = 1,
+          max = 30,
+          value = 10),
         ),
     mainPanel()
     )
