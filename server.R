@@ -1,40 +1,54 @@
-## these values can be user entries in the app
-coupon <- 0.05
-T2M <- 5
-step <- 0.0001  # in bps
+server <- function(input, output) {
 
-bondPrices <- dplyr::tibble(yield = round(seq(0.025, 0.075, step), 4)) %>%
-  dplyr::mutate(price = mapply(RTL::bond,
-                               ytm = yield,
-                               C = coupon,
-                               T2M = T2M),
-                pricePlus = mapply(RTL::bond,
-                                   ytm = yield + step,
-                                   C = coupon,
-                                   T2M = T2M),
-                priceMinus = mapply(RTL::bond,
-                                    ytm = yield - step,
-                                    C = coupon,
-                                    T2M = T2M))
+  ## these values can be user entries in the app
+  coupon <- reactive({input$coupon})
+  T2M <- reactive({input$T2M})
+  step <- 0.0001  # in bps
 
-priceBond <- function(coupon, maturity) {
-  dplyr::tibble(yield = round(seq(0.025, 0.075, step), 4)) %>%
+  bondPrices <- reactive({
+    dplyr::tibble(yield = round(seq(0.025, 0.075, step), 4)) %>%
     dplyr::mutate(price = mapply(RTL::bond,
                                  ytm = yield,
-                                 C = coupon,
-                                 T2M = T2M),
+                                 C = input$coupon,
+                                 T2M = input$T2M),
                   pricePlus = mapply(RTL::bond,
                                      ytm = yield + step,
-                                     C = coupon,
-                                     T2M = T2M),
+                                     C = input$coupon,
+                                     T2M = input$T2M),
                   priceMinus = mapply(RTL::bond,
                                       ytm = yield - step,
-                                      C = coupon,
-                                      T2M = T2M))
-}
+                                      C = input$coupon,
+                                      T2M = input$T2M))
+  })
+
+  priceBond <- reactive({
+    function(coupon, maturity) {
+    dplyr::tibble(yield = round(seq(0.025, 0.075, step), 4)) %>%
+    dplyr::mutate(price = mapply(RTL::bond,
+                                  ytm = yield,
+                                  C = input$coupon,
+                                  T2M = input$T2M),
+                    pricePlus = mapply(RTL::bond,
+                                  ytm = yield + step,
+                                  C = input$coupon,
+                                  T2M = input$T2M),
+                    priceMinus = mapply(RTL::bond,
+                                  ytm = yield - step,
+                                  C = input$coupon,
+                                  T2M = input$T2M))
+    }
+  })
 
 ## the above function and the mapping below (unsliced and with all rate maturities) is what we have to do with C++
-testData <- rateData %>% 
-  dplyr::slice(1:5) %>% 
-  dplyr::mutate(bondPrice = purrr::map2(rate, maturity, priceBond)) %>% 
-  tidyr::unnest()
+  testData <- reactive({
+    rateData %>% 
+    dplyr::slice(1:5) %>% 
+    dplyr::mutate(bondPrice = purrr::map2(rate, maturity, priceBond)) %>% 
+    tidyr::unnest()
+  })
+ 
+  output$table <- shiny::renderDataTable({
+    testData()
+  }) 
+  
+}
