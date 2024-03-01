@@ -2,8 +2,9 @@ library(tidyverse)
 library(tidyquant)
 library(purrr)
 library(RTL)
+library(shiny)
+library(shinythemes)
 
-### Some of the code below will be moved to server.R
 ## use full vector when c++ function is done
 tickers <- c("DGS1", "DGS2", "DGS3", "DGS5", "DGS7", "DGS10", "DGS20", "DGS30")
 
