@@ -80,7 +80,7 @@ portfolio_duration <- function(amounts, durations) {
 
 ```
 
-# (YTM) of a bond -
+# (YTM) of a bond - WORK IN PROGRESS 
 
 ```{r}
 
