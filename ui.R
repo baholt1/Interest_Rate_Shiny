@@ -4,13 +4,13 @@ navbarPage("Interest Rates",
     sidebarLayout(
       sidebarPanel(
         sliderInput(
-          "rate",
-          "Rates:",
+          "coupon",
+          "Coupon Rates:",
           min = 0.01,
           max = 0.10,
           value = 0.05),
         sliderInput(
-          "t2m",
+          "T2M",
           "Time to Maturity:",
           min = 1,
           max = 30,
