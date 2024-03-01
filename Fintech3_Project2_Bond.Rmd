@@ -8,13 +8,11 @@ output: html_document
 # Libraries 
 
 ```{r}
-
 library(rootSolve)
 library(tidyverse)
 library(tidyquant)
 library(ggplot2)
 library(plotly)
-
 ```
 
 # Graphing structure rates 
