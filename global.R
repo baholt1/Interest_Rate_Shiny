@@ -20,7 +20,13 @@ rateData <- tidyquant::tq_get(tickers,
   dplyr::group_by(maturity) %>% 
   dplyr::mutate(changeBPS = (rate - dplyr::lag(rate)) * 10000) %>% 
   tidyr::drop_na() %>% 
-  dplyr::filter(maturity == 1) ## trimmed down from full vector of maturities. Remove once c++ function is done
+  dplyr::filter(maturity == 1) %>%## trimmed down from full vector of maturities. Remove once c++ function is done
+  
+## final dataframe that results from the FRED dataframe being fed into the bondsuite_calculation C++ function
+calculatedData <- bondsuite_calculation(x = as.matrix(rateData %>% dplyr::mutate(date = as.numeric(date)))) %>% # Dataframe must be fed into the function as a matrix to comply with C++, does not support Date type meaning that column must be converted to numeric
+  ## converting back into a dataframe, reverting the Date column back to its proper type, grouping by maturity
+  dplyr::as_tibble(res) %>%
+  dplyr::mutate(date = as.Date(date)) %>%
+  dplyr::group_by(maturity)
 
-
-
+## loading a function takes the grand majority of the loading time, meaning ideal app performance is achieved with all calculations done in a single C++ file.
