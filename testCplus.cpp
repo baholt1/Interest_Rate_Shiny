@@ -31,7 +31,8 @@ NumericVector calculate_bond_duration_and_convexity_cpp(double coupon_rate, int 
   return NumericVector::create(_["bond_duration"] = bond_duration, _["bond_convexity"] = bond_convexity);
 }
 
-
+// Currently WIP, for some reason I can't get any changes to be made to the dataframe when called in R
+// Will implement calculations cohesively once changes can be made
 NumericMatrix mycppFunction(NumericMatrix x) {
   // Loop through each row of the input matrix x
   for (int i = 0; i < x.nrow(); i++) {
