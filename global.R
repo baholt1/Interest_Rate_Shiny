@@ -6,6 +6,12 @@ library(shiny)
 library(shinythemes)
 library(shinipsum)
 library(plotly)
+library(Rcpp)
+library(gridExtra)
+
+# Load the C++ function
+sourceCpp('testCplus.cpp')
+
 
 ## use full vector when c++ function is done
 tickers <- c("DGS1", "DGS2", "DGS3", "DGS5", "DGS7", "DGS10", "DGS20", "DGS30")
@@ -30,5 +36,14 @@ rateData <- tidyquant::tq_get(tickers,
 #   dplyr::as_tibble(res) %>%
 #   dplyr::mutate(date = as.Date(date)) %>%
 #   dplyr::group_by(maturity)
+  # dplyr::group_by(maturity)
+
+## data frame must be converted to matrix (Cote does this and directly inserting it is pretty complicated)  
+# calculatedData <- mycppFunction(x = as.matrix(rateData %>% mutate(date = as.numeric(date)))) %>%
+#   ## conversion back to data frame and grouped
+#   dplyr::as_tibble(res) %>%
+#   dplyr::mutate(date = as.Date(date)) %>%
+#   dplyr::group_by(maturity)
+
 
 ## loading a function takes the grand majority of the loading time, meaning ideal app performance is achieved with all calculations done in a single C++ file.

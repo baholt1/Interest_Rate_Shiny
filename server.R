@@ -47,27 +47,28 @@ server <- function(input, output) {
     tidyr::unnest(cols = bondPrice)
   })
  
-  output$plot <- renderPlot({
-   plots <-  reactive({
-    plot1 <- random_ggplot("bar")
-    plot2 <- random_ggplot("point")
-    plot3 <- random_ggplot("col")
-    plot4 <- random_ggplot("histogram")
+  
+  output$plots <- renderPlot({
+    # Check which options are selected in the checkbox group
+    plot_type <- input$greeks
     
-      plots <- numeric(0)
-      
-      if (input$duration) {
-        plot1
-      }
-      if (input$convexity) {
-        plot2
-      }
-      if (input$oth1) {
-        plot3
-      }
-      if (input$oth2) {
-        plot4
-      }
+    if (length(plot_type) == 0) {
+      return(NULL)
+    }
+    
+    # Generate plots based on the selected options
+    plot_list <- lapply(plot_type, function(type) {
+      switch(
+        type,
+        duration = random_ggplot("bar"),     # Replace with the appropriate pre-made chart function
+        convexity = random_ggplot("histogram"),   # Replace with the appropriate pre-made chart function
+        oth1 = random_ggplot("dotplot"),             # Replace with the appropriate pre-made chart function
+        oth2 = random_ggplot("boxplot")              # Replace with the appropriate pre-made chart function
+      )
     })
-    })
+    
+    # Combine multiple plots into a single plot
+    grid.arrange(grobs = plot_list, ncol = 2)  # Adjust the number of columns as needed
+
+  })
   }

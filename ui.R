@@ -15,7 +15,7 @@ navbarPage("Interest Rates",
           "Time to Maturity:",
           min = 1,
           max = 30,
-          value = 10),
+          value = 10)
         ),
     mainPanel( 
       dataTableOutput("table"))
@@ -30,21 +30,19 @@ navbarPage("Interest Rates",
           "Choose a Duration:",
           choices = tickers
         ),
-        checkboxInput(
-          "duration",
-          "Duration"),
-        checkboxInput(
-          "convexity", 
-          "Convexity"),
-        checkboxInput(
-          "oth1", 
-          "other 1"),
-        checkboxInput(
-          "oth2",
-          "other 2"),
+        checkboxGroupInput(
+          "greeks",
+          "Choose your risk appetite:",
+          c("Duration" = "duration",
+          "Convexity" = "convexity",
+          "other 1" = "oth1",
+          "other 2" = "oth2"),
+          selected = "duration"
+      )
       ),
-      mainPanel("table")
-    )
+      mainPanel(
+        plotOutput("plots"))
+  )
   ),
   tabPanel("Portfolio",
            h2("Portfolio"),
@@ -61,7 +59,7 @@ navbarPage("Interest Rates",
                  "Time to Maturity:",
                  min = 1,
                  max = 30,
-                 value = 10),
+                 value = 10)
              ),
              mainPanel()
           )
