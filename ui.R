@@ -1,6 +1,7 @@
 navbarPage("Interest Rates",
            theme = shinytheme('yeti'),
   tabPanel("Historic Information",
+    h2("Historic Information"),
     sidebarLayout(
       sidebarPanel(
         sliderInput(
@@ -21,18 +22,32 @@ navbarPage("Interest Rates",
     )
   ),
   tabPanel("Risk Appetite",
+    h2("Risk Appetite"),       
     sidebarLayout(
       sidebarPanel(
         selectInput(
           "userrate",
           "Choose a Duration:",
           choices = tickers
-        )
+        ),
+        checkboxInput(
+          "duration",
+          "Duration"),
+        checkboxInput(
+          "convexity", 
+          "Convexity"),
+        checkboxInput(
+          "oth1", 
+          "other 1"),
+        checkboxInput(
+          "oth2",
+          "other 2"),
       ),
-      mainPanel()
+      mainPanel("table")
     )
   ),
   tabPanel("Portfolio",
+           h2("Portfolio"),
            sidebarLayout(
              sidebarPanel(
                sliderInput(

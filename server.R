@@ -47,8 +47,27 @@ server <- function(input, output) {
     tidyr::unnest(cols = bondPrice)
   })
  
-  output$table <- shiny::renderDataTable({
-    testData()
-  }) 
-  
-}
+  output$plot <- renderPlot({
+   plots <-  reactive({
+    plot1 <- random_ggplot("bar")
+    plot2 <- random_ggplot("point")
+    plot3 <- random_ggplot("col")
+    plot4 <- random_ggplot("histogram")
+    
+      plots <- numeric(0)
+      
+      if (input$duration) {
+        plot1
+      }
+      if (input$convexity) {
+        plot2
+      }
+      if (input$oth1) {
+        plot3
+      }
+      if (input$oth2) {
+        plot4
+      }
+    })
+    })
+  }
