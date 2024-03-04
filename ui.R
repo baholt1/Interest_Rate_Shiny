@@ -4,6 +4,11 @@ navbarPage("Interest Rates",
     h2("Historic Information"),
     sidebarLayout(
       sidebarPanel(
+        selectInput(
+          "userrate",
+          "Choose a Duration:",
+          choices = tickers
+        ),
         sliderInput(
           "coupon",
           "Coupon Rates:",

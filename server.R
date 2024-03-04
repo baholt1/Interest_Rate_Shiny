@@ -47,6 +47,9 @@ server <- function(input, output) {
     tidyr::unnest(cols = bondPrice)
   })
  
+  output$table <- shiny::renderDataTable({
+    testData()
+  }) 
   
   output$plots <- renderPlot({
     # Check which options are selected in the checkbox group

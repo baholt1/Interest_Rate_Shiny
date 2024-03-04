@@ -36,14 +36,14 @@ rateData <- tidyquant::tq_get(tickers,
 #   dplyr::as_tibble(res) %>%
 #   dplyr::mutate(date = as.Date(date)) %>%
 #   dplyr::group_by(maturity)
-  # dplyr::group_by(maturity)
+
 
 ## data frame must be converted to matrix (Cote does this and directly inserting it is pretty complicated)  
-# calculatedData <- mycppFunction(x = as.matrix(rateData %>% mutate(date = as.numeric(date)))) %>%
-#   ## conversion back to data frame and grouped
-#   dplyr::as_tibble(res) %>%
-#   dplyr::mutate(date = as.Date(date)) %>%
-#   dplyr::group_by(maturity)
+calculatedData <- mycppFunction(x = as.matrix(rateData %>% mutate(date = as.numeric(date)))) %>%
+  ## conversion back to data frame and grouped
+  dplyr::as_tibble(res) %>%
+  dplyr::mutate(date = as.Date(date)) %>%
+  dplyr::group_by(maturity)
 
 
 ## loading a function takes the grand majority of the loading time, meaning ideal app performance is achieved with all calculations done in a single C++ file.
