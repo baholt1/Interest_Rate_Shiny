@@ -86,6 +86,8 @@ NumericMatrix mycppFunction(NumericMatrix x) {
     // Extracting values from the matrix
     double maturity = x(i, 1); // Assuming maturity is in column 1
     double rate = x(i, 2); // Assuming rate is in column 2
+    // Calculate price by multiplying rate by 100 and adding it as a new column
+    x(i, 2) = rate * 100.0;
   }
   return x; // Return the modified matrix with calculated metrics
 }
