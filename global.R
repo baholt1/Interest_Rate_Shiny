@@ -21,8 +21,7 @@ rateData <- tidyquant::tq_get(tickers,
   dplyr::mutate(date,
                 maturity = as.numeric(stringr::str_replace_all(symbol, "(?i)DGS", "")),
                 rate = price / 100, .keep = "none") %>% 
-  dplyr::group_by(maturity) %>% 
-  dplyr::filter(maturity == 1)## trimmed down from full vector of maturities. Remove once c++ function is done
+  dplyr::group_by(maturity)
 
 ## data frame must be converted to matrix (Cote does this and directly inserting it is pretty complicated)  
 calculatedData <- mycppFunction(x = as.matrix(rateData %>% mutate(date = as.numeric(date)))) %>%

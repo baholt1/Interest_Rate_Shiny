@@ -81,13 +81,25 @@ NumericVector calculate_bond_duration_and_convexity_cpp(double coupon_rate, int 
 // Will implement calculations cohesively once changes can be made
 // [[Rcpp::export]]
 NumericMatrix mycppFunction(NumericMatrix x) {
-  // Loop through each row of the input matrix x
+  // Resize the input matrix to accommodate the new column for price
+  NumericMatrix result(x.nrow(), x.ncol() + 1);
+  
+  // Copy the existing columns to the result matrix
   for (int i = 0; i < x.nrow(); i++) {
-    // Extracting values from the matrix
-    double maturity = x(i, 1); // Assuming maturity is in column 1
-    double rate = x(i, 2); // Assuming rate is in column 2
-    // Calculate price by multiplying rate by 100 and adding it as a new column
-    x(i, 2) = rate * 100.0;
+    for (int j = 0; j < x.ncol(); j++) {
+      result(i, j) = x(i, j);
+    }
   }
-  return x; // Return the modified matrix with calculated metrics
+  
+  // Set the name of the new column to "price"
+  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "price");
+  
+  // Calculate and add the price as a new column
+  for (int i = 0; i < result.nrow(); i++) {
+    double rate = result(i, 2); // Assuming rate is in column 2
+    double price = rate * 100.0;
+    result(i, 3) = price; // Add the calculated price as the fourth column
+  }
+  
+  return result; // Return the modified matrix with the added price column
 }
