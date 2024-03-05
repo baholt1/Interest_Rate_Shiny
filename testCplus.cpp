@@ -78,10 +78,10 @@ NumericVector calculate_bond_duration_and_convexity_cpp(double coupon_rate, int 
 }
 
 // Noteworthy metric: time to load with just mycppFunction: 3.5 seconds, with everything: 3.9 seconds
-// Calculation timings for anything so far in C++ are near instant and negligible
+// Calculation timings for any functions so far in C++ are near instant and negligible
 
-// WIP: moved BPS to be calculated here, price is there incase to help/test
-// Notes with 'XX' indicate areas that need to be changed in the process of adding another column of data
+// WIP: moved BPS to be calculated here, price too to help/test
+// Notes with 'XX' indicate areas that need to be changed in the process of adding another column of data (3 of them total)
 // [[Rcpp::export]]
 NumericMatrix mycppFunction(NumericMatrix x) {
   // Resize the input matrix to accommodate the new column for price
