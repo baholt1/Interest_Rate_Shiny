@@ -20,8 +20,10 @@ rateData <- tidyquant::tq_get(tickers,
   tidyr::drop_na() %>% 
   dplyr::mutate(date,
                 maturity = as.numeric(stringr::str_replace_all(symbol, "(?i)DGS", "")),
-                rate = price / 100, .keep = "none") %>% 
-  dplyr::group_by(maturity)
+                rate = price / 100, .keep = "none")
+  ## regardless of complexity and length, we can add any number of additional columns
+  ## as long as they do not call functions (i.e. dplyr::lag)
+  ## ensures fastest execution time
 
 ## data frame must be converted to matrix (Cote does this and directly inserting it is pretty complicated)  
 calculatedData <- mycppFunction(x = as.matrix(rateData %>% mutate(date = as.numeric(date)))) %>%

@@ -77,12 +77,15 @@ NumericVector calculate_bond_duration_and_convexity_cpp(double coupon_rate, int 
   return NumericVector::create(_["bond_duration"] = bond_duration, _["bond_convexity"] = bond_convexity);
 }
 
+// Noteworthy metric: time to load with just mycppFunction: 3.5 seconds, with everything: 3.9 seconds
+// Calculation timings for anything so far in C++ are near instant and negligible
+
 // Currently WIP, for some reason I can't get any changes to be made to the dataframe when called in R
 // Will implement calculations cohesively once changes can be made
 // [[Rcpp::export]]
 NumericMatrix mycppFunction(NumericMatrix x) {
   // Resize the input matrix to accommodate the new column for price
-  NumericMatrix result(x.nrow(), x.ncol() + 1);
+  NumericMatrix result(x.nrow(), x.ncol() + 2);
   
   // Copy the existing columns to the result matrix
   for (int i = 0; i < x.nrow(); i++) {
@@ -92,13 +95,21 @@ NumericMatrix mycppFunction(NumericMatrix x) {
   }
   
   // Set the name of the new column to "price"
-  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "price");
+  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "price", "changeBPS");
   
   // Calculate and add the price as a new column
   for (int i = 0; i < result.nrow(); i++) {
     double rate = result(i, 2); // Assuming rate is in column 2
     double price = rate * 100.0;
     result(i, 3) = price; // Add the calculated price as the fourth column
+  }
+  
+  // Calculate and add change in BPS as a new column
+  for (int i = 1; i < result.nrow(); i++) {
+    double rate_prev = result(i - 1, 2);
+    double rate_cur = result(i, 2);
+    double changeBPS = (rate_cur - rate_prev) * 10000;
+    result(i, result.ncol() - 1) = changeBPS; // Add change in BPS as the last column
   }
   
   return result; // Return the modified matrix with the added price column
