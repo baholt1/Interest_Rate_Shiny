@@ -80,12 +80,12 @@ NumericVector calculate_bond_duration_and_convexity_cpp(double coupon_rate, int 
 // Noteworthy metric: time to load with just mycppFunction: 3.5 seconds, with everything: 3.9 seconds
 // Calculation timings for anything so far in C++ are near instant and negligible
 
-// Currently WIP, for some reason I can't get any changes to be made to the dataframe when called in R
-// Will implement calculations cohesively once changes can be made
+// WIP: moved BPS to be calculated here, price is there incase to help/test
+// Notes with 'XX' indicate areas that need to be changed in the process of adding another column of data
 // [[Rcpp::export]]
 NumericMatrix mycppFunction(NumericMatrix x) {
   // Resize the input matrix to accommodate the new column for price
-  NumericMatrix result(x.nrow(), x.ncol() + 2);
+  NumericMatrix result(x.nrow(), x.ncol() + 2); // XX: add 1 for each additional column
   
   // Copy the existing columns to the result matrix
   for (int i = 0; i < x.nrow(); i++) {
@@ -94,9 +94,10 @@ NumericMatrix mycppFunction(NumericMatrix x) {
     }
   }
   
-  // Set the name of the new column to "price"
+  // XX: add each additional column name to the end of this function
   colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "price", "changeBPS");
   
+  // XX: following are calculations for the data of new columns, can be used to template additional columns by adding to the end
   // Calculate and add the price as a new column
   for (int i = 0; i < result.nrow(); i++) {
     double rate = result(i, 2); // Assuming rate is in column 2
