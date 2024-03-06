@@ -32,11 +32,21 @@ navbarPage("Interest Rates",
           "userrate",
           "Choose a Duration:",
           choices = tickers
-        )
+        ),
+        checkboxGroupInput(
+          "greeks",
+          "Choose your risk appetite:",
+          c("Duration" = "duration",
+            "Convexity" = "convexity",
+            "other 1" = "oth1",
+            "other 2" = "oth2"),
+          selected = "duration"),
+          ),
+      mainPanel(
+        plotOutput("plots")
       ),
-      mainPanel()
-    )
-  ),
+      )
+    ),
   tabPanel("Portfolio",
            sidebarLayout(
              sidebarPanel(

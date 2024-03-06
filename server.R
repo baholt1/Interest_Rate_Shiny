@@ -50,5 +50,29 @@ server <- function(input, output) {
   output$table <- shiny::renderDataTable({
     testData()
   }) 
+
+  
+  output$plots <- renderPlot({
+    # Check which options are selected in the checkbox group
+    plot_type <- input$greeks
+    if (length(plot_type) == 0) {
+      return(NULL)
+    }
+
+
+    # Generate plots based on the selected options
+    plot_list <- lapply(plot_type, function(type) { 
+      switch(
+        type,
+        duration = random_ggplot("bar"),     # Replace with the appropriate pre-made chart function
+        convexity = random_ggplot("histogram"),   # Replace with the appropriate pre-made chart function
+        oth1 = random_ggplot("dotplot"),             # Replace with the appropriate pre-made chart function
+        oth2 = random_ggplot("boxplot")              # Replace with the appropriate pre-made chart function
+      )
+    })
+    # Combine multiple plots into a single plot
+    grid.arrange(grobs = plot_list, ncol = 2)  # Adjust the number of columns as needed
+  })
+
   
 }
