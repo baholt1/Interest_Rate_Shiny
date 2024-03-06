@@ -89,7 +89,7 @@ basis <- ggplotly(basis)
 basis
 ```
 
-# Historical Duration 
+# Historical Duration (Pending)
 
 ```{r}
 bond_series_condensed <- c("DGS30")
@@ -102,7 +102,7 @@ basis <- tidyquant::tq_get(bond_series_condensed,
   dplyr::mutate(value = 100 - price)
 ```
 
-# Historical Delta 
+# Historical Delta (Pending)
 
 ```{r}
 bond_series_condensed <- c("DGS30")
@@ -119,8 +119,57 @@ basis <- tidyquant::tq_get(bond_series_condensed,
                 face_value = 100)
 ```
 
-# Portfolio Creation 
+# Portfolio Creation - YTM Calculation 
 
+```{r}
+
+ytm <- function(PVs, Ms, C) {
+    ytms <- numeric(length(PVs))
+    for (i in 1:length(PVs)) {
+        ytm_1 <- (C + (100 - PVs[i]) / Ms[i])
+        ytm_2 <- (100 + PVs[i]) / 2
+        ytms[i] <- ytm_1 / ytm_2
+    }
+    return(ytms)
+}
+
+C <- c(5, 5, 5, 5)
+Ms <- c(2, 5, 10, 30) # User input of all the maturities they would like 
+
+series <- list()
+
+for (m in Ms) {
+  if (m == 2) {
+    series <- c(series, "DGS2")
+  } else if (m == 5) {
+    series <- c(series, "DGS5")
+  } else if (m == 10) {
+    series <- c(series, "DGS10")
+  } else if (m == 30) {
+    series <- c(series, "DGS30")
+  } 
+}
+
+series <- unlist(series)
+
+PVs <- tidyquant::tq_get(series, 
+                         get = "economic.data", 
+                         from = "2024-01-01", 
+                         to = Sys.Date()) %>% 
+  dplyr::group_by(symbol) %>% 
+  dplyr::mutate(value = 100 - price) %>% 
+  pivot_wider(names_from = symbol, values_from = value) %>% 
+  dplyr::filter(date == "2024-03-04")
+
+data_long <- pivot_longer(PVs, cols = -c(date, price), names_to = "bond", values_to = "value") %>% 
+  na.omit() 
+
+PVs <- data_long$value
+
+ytms <- ytm(PVs, Ms, C)
+print(ytms)
+
+```
 
 
 
