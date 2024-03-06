@@ -1,0 +1,141 @@
+---
+title: "Fintech3_Bond_Information"
+author: "Aditya Sharma"
+date: "2024-03-05"
+output: html_document
+---
+
+# Libraries, Usernames, and Passwords 
+
+```{r}
+library(rootSolve)
+library(tidyverse)
+library(tidyquant)
+library(ggplot2)
+library(plotly)
+options(scipen=999)
+```
+
+# Graphing Interest Rates for all Maturities 
+
+```{r}
+bond_series <- c("DGS1", "DGS2", "DGS3", "DGS5", "DGS7", "DGS10", "DGS20", "DGS30")
+
+bond_rates <- tidyquant::tq_get(bond_series, 
+                     get = "economic.data", 
+                     from = "1970-01-01", 
+                     to = Sys.Date()) %>% 
+  na.omit() %>%
+  ggplot(aes(x = date, y = price, col = symbol)) + 
+  geom_line() +
+  theme_minimal() + 
+  theme(axis.line = element_line(color = "black"), 
+        axis.ticks = element_line(color = "black"), 
+        legend.title = element_text(color = "black", size = 10, face = "bold"),
+        axis.title.x = element_text(color = "black", size = 10), 
+        axis.title.y = element_text(color = "black", size = 10)) + 
+  scale_color_discrete(name = "Maturities") + 
+  labs(x = "Time", y = "Interest Rate")
+
+bond_rates <- ggplotly(bond_rates)
+
+bond_rates
+```
+
+# Graphing Bond Prices for Key Maturities 
+
+```{r}
+bond_series_condensed <- c("DGS2", "DGS5", "DGS10", "DGS20", "DGS30")
+
+bond_price <- tq_get(bond_series_condensed, 
+                get = "economic.data", 
+                from = "2002-01-01", 
+                to = Sys.Date()) %>% 
+  dplyr::group_by(symbol) %>% 
+  dplyr::mutate(value = 100 - price) %>% 
+  na.omit() %>% 
+  ggplot(aes(x = date, y = value, col = symbol)) + geom_line()+
+  theme_minimal() + 
+  theme(axis.line = element_line(color = "black"), 
+        axis.ticks = element_line(color = "black"), 
+        legend.title = element_text(color = "black", size = 10, face = "bold"),
+        axis.title.x = element_text(color = "black", size = 10), 
+        axis.title.y = element_text(color = "black", size = 10)) + 
+  scale_color_discrete(name = "Maturities") + 
+  labs(x = "Time", y = "Value")
+
+bond_price <- ggplotly(bond_price)
+
+bond_price
+```
+
+# Change in Basis Points 
+
+```{r}
+bond_series_condensed <- c("DGS2", "DGS5", "DGS10", "DGS20", "DGS30")
+
+basis <- tq_get(bond_series_condensed, 
+                get = "economic.data", 
+                from = "2002-01-01", 
+                to = Sys.Date()) %>% 
+  mutate(basis = (price - lag(price)) * 10000) %>% 
+  na.omit() %>%
+  ggplot(aes(x = date, y = basis, col = symbol, alpha = abs(basis))) + 
+  geom_point() +
+  scale_alpha_continuous(range = c(0.1, 1), guide = "none")
+
+basis <- ggplotly(basis)
+
+basis
+```
+
+# Historical Duration 
+
+```{r}
+bond_series_condensed <- c("DGS30")
+
+basis <- tidyquant::tq_get(bond_series_condensed, 
+                get = "economic.data", 
+                from = "2002-01-01", 
+                to = Sys.Date()) %>% 
+  na.omit() %>% 
+  dplyr::mutate(value = 100 - price)
+```
+
+# Historical Delta 
+
+```{r}
+bond_series_condensed <- c("DGS30")
+
+basis <- tidyquant::tq_get(bond_series_condensed, 
+                get = "economic.data", 
+                from = "2002-01-01", 
+                to = Sys.Date()) %>% 
+  na.omit() %>% 
+  dplyr::mutate(value = 100 - price, 
+                delta_yield = 0.0001, 
+                coupon = 5, 
+                years_to_maturity = 30, 
+                face_value = 100)
+```
+
+# Portfolio Creation 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
