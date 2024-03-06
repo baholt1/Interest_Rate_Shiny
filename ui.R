@@ -6,9 +6,9 @@ navbarPage("Interest Rates",
         sliderInput(
           "coupon",
           "Coupon Rates:",
-          min = 0.01,
+          min = 0,
           max = 0.10,
-          value = 0.05),
+          value = 0.01),
         sliderInput(
           "T2M",
           "Time to Maturity:",
