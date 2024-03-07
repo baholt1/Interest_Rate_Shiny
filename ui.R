@@ -36,11 +36,11 @@ navbarPage("Interest Rates",
         checkboxGroupInput(
           "greeks",
           "Choose your risk appetite:",
-          c("Duration" = "duration",
-            "Convexity" = "convexity",
-            "other 1" = "oth1",
-            "other 2" = "oth2"),
-          selected = "duration"),
+          c("Rates" = "rates",
+            "Change in Basis Points" = "changeBPS",
+            "Delta" = "delta",
+            "Gamma" = "gamma"),
+          selected = "rates"),
           ),
       mainPanel(
         plotOutput("plots")
