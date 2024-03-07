@@ -34,8 +34,8 @@ List bond_duration_convexity(double ytm, double C, double T2M, int m) {
   for (int i = 0; i < T2M * m; ++i) {
     double t_years = (i + 1) * (1.0 / m);
     double cf_value = (i == T2M * m - 1) ? (C * 100 / m + 100) : (C * 100 / m);
-    double disc_factor = 1 / pow((1 + ytm / m), (i + 1) * (1.0 / m));
-    duration += (cf_value * t_years) / price;
+    double disc_factor = 1 / pow((1 + ytm / m), t_years);
+    duration += (cf_value * disc_factor * t_years) / price;
     convexity += (cf_value * t_years * (t_years + 1)) / (price * pow(1 + ytm / m, (i + 1) * period));
   }
   List result = List::create(Named("duration") = duration, Named("convexity") = convexity);
@@ -90,7 +90,7 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
   for (int i = 0; i < result.nrow(); i++) {
     double PV = result(i, 3);
     double M = result(i, 1);
-    double ytms = result(i, 5);
+    double ytms = result(i, 2);
     int m = 2; // Periods per year (hardcoded, replace with user input if needed)
     double PricePlus = bond_price(ytms + 0.0001, coupon_rate, M, m);  // Increment YTM by 0.0001 for PricePlus
     double PriceMinus = bond_price(ytms - 0.0001, coupon_rate, M, m); // Decrement YTM by 0.0001 for PriceMinus
@@ -112,7 +112,7 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
   
   // Calculate and add Duration and Convexity as new columns
   for (int i = 0; i < result.nrow(); i++) {
-    double ytm = result(i, 5); // Yield to maturity
+    double ytm = result(i, 2); // Yield to maturity
     double T2M = result(i, 1); // Time to maturity
     int m = 2; // Periods per year (hardcoded, replace with user input if needed)
     List metrics = bond_duration_convexity(ytm, coupon_rate, T2M, m); // Calculate bond metrics
