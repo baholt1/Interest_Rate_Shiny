@@ -23,19 +23,23 @@ double bond_price(double ytm, double C, double T2M, int m) {
 }
 
 // [[Rcpp::export]]
-// Function to calculate bond duration
-double bond_duration(double ytm, double C, double T2M, int m) {
+// Function to calculate bond duration and convexity
+List bond_duration_convexity(double ytm, double C, double T2M, int m) {
   double duration = 0.0;
+  double convexity = 0.0;
   double price = bond_price(ytm, C, T2M, m); // Calculate bond price
+  double period = 1.0 / m;
   
-  // Calculate bond duration
+  // Calculate bond duration and convexity
   for (int i = 0; i < T2M * m; ++i) {
     double t_years = (i + 1) * (1.0 / m);
     double cf_value = (i == T2M * m - 1) ? (C * 100 / m + 100) : (C * 100 / m);
     double disc_factor = 1 / pow((1 + ytm / m), (i + 1) * (1.0 / m));
     duration += (cf_value * t_years) / price;
+    convexity += (cf_value * t_years * (t_years + 1)) / (price * pow(1 + ytm / m, (i + 1) * period));
   }
-  return duration;
+  List result = List::create(Named("duration") = duration, Named("convexity") = convexity);
+  return result;
 }
 
 // Noteworthy metric: time to load with just mycppFunction: 3.5 seconds, with everything: 3.9 seconds
@@ -45,7 +49,7 @@ double bond_duration(double ytm, double C, double T2M, int m) {
 // [[Rcpp::export]]
 NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
   // Resize the input matrix to accommodate the new column for price
-  NumericMatrix result(x.nrow(), x.ncol() + 6); // XX: add 1 for each additional column
+  NumericMatrix result(x.nrow(), x.ncol() + 7); // XX: add 1 for each additional column
   
   // Copy the existing columns to the result matrix
   for (int i = 0; i < x.nrow(); i++) {
@@ -55,7 +59,7 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
   }
   
   // XX: add each additional column name to the end of this function
-  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "value", "changeBPS", "ytm", "delta", "gamma", "duration");
+  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "value", "changeBPS", "ytm", "delta", "gamma", "duration", "convexity");
   
   // XX: following are calculations for the data of new columns, can be used to template additional columns by adding to the end but before the return
   // Calculate and add the PV as a new column
@@ -105,13 +109,14 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
     result(i, 7) = Gamma; // Overwrites previous PriceMinus
   }
   
-  // Calculate and add Duration as a new column
+  // Calculate and add Duration and Convexity as new columns
   for (int i = 0; i < result.nrow(); i++) {
     double ytm = result(i, 5); // Yield to maturity
     double T2M = result(i, 1); // Time to maturity
     int m = 2; // Periods per year (hardcoded, replace with user input if needed)
-    double duration = bond_duration(ytm, coupon_rate, T2M, m); // Calculate bond duration
-    result(i, 8) = duration; // Add duration to the result matrix
+    List metrics = bond_duration_convexity(ytm, coupon_rate, T2M, m); // Calculate bond metrics
+    result(i, 8) = as<double>(metrics["duration"]); // Add duration to the result matrix
+    result(i, 9) = as<double>(metrics["convexity"]); // Add convexity to the result matrix
   }
   
   return result; // Return the modified matrix with the added price column
