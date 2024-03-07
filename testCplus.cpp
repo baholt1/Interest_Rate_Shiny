@@ -43,7 +43,7 @@ double bond_duration(double ytm, double C, double T2M, int m) {
 
 // Notes with 'XX' indicate areas that need to be changed in the process of adding another column of data (3 of them total)
 // [[Rcpp::export]]
-NumericMatrix mycppFunction(NumericMatrix x) {
+NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
   // Resize the input matrix to accommodate the new column for price
   NumericMatrix result(x.nrow(), x.ncol() + 8); // XX: add 1 for each additional column
   
@@ -73,14 +73,11 @@ NumericMatrix mycppFunction(NumericMatrix x) {
     result(i, 4) = changeBPS; // Add change in BPS as the 5th column
   }
   
-  // Hardcoded value for C, MUST BE CHANGED TO IMPLEMENT USER INPUT
-  double C = 0.05;
-  
   // Calculate the yield to maturity and add it as a new column
   for (int i = 0; i < result.nrow(); i++) {
     double PV = result(i, 3);
     double M = result(i, 1);
-    double ytms = ytm(PV, M, C);
+    double ytms = ytm(PV, M, coupon_rate);
     result(i, 5) = ytms;
   }
   
@@ -90,10 +87,9 @@ NumericMatrix mycppFunction(NumericMatrix x) {
     double PV = result(i, 3);
     double M = result(i, 1);
     double ytms = result(i, 5);
-    double C = 0.05; // Coupon rate (hardcoded, replace with user input if needed)
     int m = 1; // Periods per year (hardcoded, replace with user input if needed)
-    double PricePlus = bond_price(ytms + 0.0001, C, M, m);  // Increment YTM by 0.0001 for PricePlus
-    double PriceMinus = bond_price(ytms - 0.0001, C, M, m); // Decrement YTM by 0.0001 for PriceMinus
+    double PricePlus = bond_price(ytms + 0.0001, coupon_rate, M, m);  // Increment YTM by 0.0001 for PricePlus
+    double PriceMinus = bond_price(ytms - 0.0001, coupon_rate, M, m); // Decrement YTM by 0.0001 for PriceMinus
     result(i, 6) = PricePlus;
     result(i, 7) = PriceMinus;
   }
@@ -112,11 +108,10 @@ NumericMatrix mycppFunction(NumericMatrix x) {
   // Calculate and add Duration as a new column
   for (int i = 0; i < result.nrow(); i++) {
     double ytm = result(i, 5); // Yield to maturity
-    double C = 0.05; // Coupon rate (hardcoded, replace with user input if needed)
     double T2M = result(i, 1); // Time to maturity
     int m = 1; // Periods per year (hardcoded, replace with user input if needed)
     
-    double duration = bond_duration(ytm, C, T2M, m); // Calculate bond duration
+    double duration = bond_duration(ytm, coupon_rate, T2M, m); // Calculate bond duration
     result(i, 10) = duration; // Add duration to the result matrix
   }
   
