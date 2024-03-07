@@ -89,6 +89,29 @@ basis <- ggplotly(basis)
 basis
 ```
 
+# Graphing change basis points - not complete 
+
+```{r}
+
+series <- c("DGS2","DGS5", "DGS10", "DGS20", "DGS30")
+
+rates <- 
+  tidyquant::tq_get(series, 
+                    get = "economic.data", 
+                    from = "1970-01-01") %>% 
+  dplyr::filter(date >= "1990-01-01") %>% 
+  na.omit() %>% 
+  dplyr::group_by(symbol) %>% 
+  dplyr::mutate(price_delta = (price / dplyr::lag(price)) - 1) %>% 
+  na.omit()
+
+basis_point <- rates %>% 
+  ggplot(aes(x = date, y = price_delta, col = symbol)) + geom_point()
+
+basis_point <- ggplotly(basis_point)
+
+```
+
 # Historical Duration (Pending)
 
 ```{r}
@@ -170,7 +193,14 @@ ytms <- ytm(PVs, Ms, C)
 print(ytms)
 
 ```
+# Duration Calculation 
 
+```{r}
+
+
+
+
+```
 
 
 
