@@ -1,10 +1,10 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// [[Rcpp::export]] THIS LINE EXPORTS THE FUNCTION TO BE CALLED IN R, REMOVE THESE ALL EXCEPT FOR ONES NEEDED
+// [[Rcpp::export]]
 // Function to calculate yield to maturity
 double ytm(double PV, double M, double C) {
-  double ytm_1 = (C + (100 - PV) / M);
+  double ytm_1 = (C*100 + (100 - PV) / M);
   double ytm_2 = (100 + PV) / 2.0;
   return ytm_1 / ytm_2;
 }
@@ -90,7 +90,7 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
   for (int i = 0; i < result.nrow(); i++) {
     double PV = result(i, 3);
     double M = result(i, 1);
-    double ytms = result(i, 5);
+    double ytms = result(i, 2);
     int m = 2; // Periods per year (hardcoded, replace with user input if needed)
     double PricePlus = bond_price(ytms + 0.0001, coupon_rate, M, m);  // Increment YTM by 0.0001 for PricePlus
     double PriceMinus = bond_price(ytms - 0.0001, coupon_rate, M, m); // Decrement YTM by 0.0001 for PriceMinus
@@ -103,15 +103,16 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
   for (int i = 0; i < result.nrow(); i++) {
     double PricePlus = result(i, 6);
     double PriceMinus = result(i, 7);
-    double Delta = (PricePlus - PriceMinus) / (2 * 0.01) / 10000; // StepSize is 0.0001
-    double Gamma = 0.5 * ((PricePlus - 2 * result(i, 3) + PriceMinus) / pow(0.01, 2)) / pow(10000, 2); // StepSize is 0.0001
+    double Delta = (PricePlus - PriceMinus) / (2 * 0.0001) / 10000; // StepSize is 0.0001
+    double Gamma = 0.5 * ((PricePlus - 2 * result(i, 3) + PriceMinus) / pow(0.0001, 2)) / pow(10000, 2); // StepSize is 0.0001
     result(i, 6) = Delta; // Overwrites previous PricePlus
     result(i, 7) = Gamma; // Overwrites previous PriceMinus
   }
   
+  
   // Calculate and add Duration and Convexity as new columns
   for (int i = 0; i < result.nrow(); i++) {
-    double ytm = result(i, 5); // Yield to maturity
+    double ytm = result(i, 2); // Yield to maturity
     double T2M = result(i, 1); // Time to maturity
     int m = 2; // Periods per year (hardcoded, replace with user input if needed)
     List metrics = bond_duration_convexity(ytm, coupon_rate, T2M, m); // Calculate bond metrics
