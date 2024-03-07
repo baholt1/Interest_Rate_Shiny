@@ -2,52 +2,33 @@
 using namespace Rcpp;
 
 // Function to calculate yield to maturity
-// [[Rcpp::export]]
 double ytm(double PV, double M, double C) {
   double ytm_1 = (C + (100 - PV) / M);
   double ytm_2 = (100 + PV) / 2.0;
   return ytm_1 / ytm_2;
 }
 
-// [[Rcpp::export]]
-NumericVector calculate_bond_duration_and_convexity_cpp(double coupon_rate, int years_to_maturity, double yield_to_maturity) {
-  NumericVector present_values(years_to_maturity);
-  double discount_factor = 1.0 / (1.0 + yield_to_maturity);
-  
-  for (int i = 0; i < years_to_maturity - 1; ++i) {
-    present_values[i] = coupon_rate * (1.0 - pow(1.0 + yield_to_maturity, -(years_to_maturity - i))) / yield_to_maturity;
+// Function to calculate bond price based on the R code provided
+double bond_price(double ytm, double C, double T2M) {
+  double price = 0.0;
+  int m = 2; // Assuming semi-annual coupon payments ???
+  double period = 1.0 / m;
+  for (int i = 0; i < T2M * m; ++i) {
+    double cf_value = (i == T2M * m - 1) ? (C * 100 / m + 100) : (C * 100 / m);
+    double disc_factor = 1 / pow((1 + ytm / m), (i + 1) * period);
+    price += cf_value * disc_factor;
   }
-  
-  present_values[years_to_maturity - 1] = present_values[years_to_maturity - 1] + discount_factor;
-  
-  // Calculate duration
-  double sum_pv = 0.0;
-  double bond_duration = 0.0;
-  for (int i = 0; i < years_to_maturity; ++i) {
-    sum_pv += present_values[i];
-    bond_duration += present_values[i] * (i + 1);
-  }
-  bond_duration /= sum_pv;
-  
-  // Calculate convexity
-  double bond_convexity = 0.0;
-  for (int i = 0; i < years_to_maturity; ++i) {
-    bond_convexity += present_values[i] * (i + 1) * (i + 2);
-  }
-  bond_convexity /= sum_pv * (1 + yield_to_maturity) * (1 + yield_to_maturity);
-  
-  return NumericVector::create(_["bond_duration"] = bond_duration, _["bond_convexity"] = bond_convexity);
+  return price;
 }
 
 // Noteworthy metric: time to load with just mycppFunction: 3.5 seconds, with everything: 3.9 seconds
 // Calculation timings for any functions so far in C++ are near instant and negligible
 
-// WIP: moved BPS to be calculated here, price too to help/test
 // Notes with 'XX' indicate areas that need to be changed in the process of adding another column of data (3 of them total)
 // [[Rcpp::export]]
 NumericMatrix mycppFunction(NumericMatrix x) {
   // Resize the input matrix to accommodate the new column for price
-  NumericMatrix result(x.nrow(), x.ncol() + 3); // XX: add 1 for each additional column
+  NumericMatrix result(x.nrow(), x.ncol() + 5); // XX: add 1 for each additional column
   
   // Copy the existing columns to the result matrix
   for (int i = 0; i < x.nrow(); i++) {
@@ -57,7 +38,7 @@ NumericMatrix mycppFunction(NumericMatrix x) {
   }
   
   // XX: add each additional column name to the end of this function
-  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "value", "changeBPS", "ytm");
+  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "value", "changeBPS", "ytm", "delta", "gamma");
   
   // XX: following are calculations for the data of new columns, can be used to template additional columns by adding to the end
   // Calculate and add the PV as a new column
@@ -86,5 +67,27 @@ NumericMatrix mycppFunction(NumericMatrix x) {
     result(i, 5) = ytms;
   }
   
+  // Step size of 0.0001 set here, MUST BE CHANGED TO IMPLEMENT USER INPUT
+  // Calculate PricePlus and PriceMinus and add them as new columns
+  for (int i = 0; i < result.nrow(); i++) {
+    double PV = result(i, 3);
+    double M = result(i, 1);
+    double ytms = result(i, 5);
+    double PricePlus = bond_price(ytms + 0.0001, C, M);  // Increment YTM by 0.0001 for PricePlus
+    double PriceMinus = bond_price(ytms - 0.0001, C, M); // Decrement YTM by 0.0001 for PriceMinus
+    result(i, 6) = PricePlus;
+    result(i, 7) = PriceMinus;
+  }
+  
+  // Step size of 0.0001 set here, MUST BE CHANGED TO IMPLEMENT USER INPUT
+  // Calculate and add Delta and Gamma as new columns
+  for (int i = 0; i < result.nrow(); i++) {
+    double PricePlus = result(i, 6);
+    double PriceMinus = result(i, 7);
+    double Delta = (PricePlus - PriceMinus) / (2 * 0.01) / 10000; // StepSize is 0.0001
+    double Gamma = 0.5 * ((PricePlus - 2 * result(i, 3) + PriceMinus) / pow(0.01, 2)) / pow(10000, 2); // StepSize is 0.0001
+    result(i, 6) = Delta;
+    result(i, 7) = Gamma;
+  }
   return result; // Return the modified matrix with the added price column
 }
