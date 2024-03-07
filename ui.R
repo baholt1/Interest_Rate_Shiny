@@ -2,27 +2,11 @@ navbarPage("Interest Rates",
            theme = shinytheme('yeti'),
   tabPanel("Historic Information",
     sidebarLayout(
-      sidebarPanel(
-        selectInput(
-          "userrate",
-          "Choose a Duration:",
-          choices = tickers
-        ),
-        sliderInput(
-          "coupon",
-          "Coupon Rates:",
-          min = 0,
-          max = 0.10,
-          value = 0.01),
-        sliderInput(
-          "T2M",
-          "Time to Maturity:",
-          min = 1,
-          max = 30,
-          value = 10),
-        ),
-    mainPanel( 
-      dataTableOutput("table"))
+      sidebarPanel(),
+    mainPanel(plotlyOutput("plot1"),
+              plotlyOutput("plot2"),
+              plotlyOutput("plot3"),
+              plotlyOutput("plot4"))
     )
   ),
   tabPanel("Risk Appetite",
@@ -34,10 +18,6 @@ navbarPage("Interest Rates",
           choices = tickers
         )),
       mainPanel(
-        plotlyOutput("plot1"),
-        plotlyOutput("plot2"),
-        plotlyOutput("plot3"),
-        plotlyOutput("plot4")
       ),
       )
     ),

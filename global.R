@@ -1,7 +1,6 @@
 library(tidyverse)
 library(tidyquant)
 library(purrr)
-library(RTL)
 library(shiny)
 library(shinythemes)
 library(shinipsum)
