@@ -45,7 +45,7 @@ double bond_duration(double ytm, double C, double T2M, int m) {
 // [[Rcpp::export]]
 NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
   // Resize the input matrix to accommodate the new column for price
-  NumericMatrix result(x.nrow(), x.ncol() + 8); // XX: add 1 for each additional column
+  NumericMatrix result(x.nrow(), x.ncol() + 6); // XX: add 1 for each additional column
   
   // Copy the existing columns to the result matrix
   for (int i = 0; i < x.nrow(); i++) {
@@ -55,7 +55,7 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
   }
   
   // XX: add each additional column name to the end of this function
-  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "value", "changeBPS", "ytm", "priceplus", "priceminus", "delta", "gamma", "duration");
+  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "value", "changeBPS", "ytm", "delta", "gamma", "duration");
   
   // XX: following are calculations for the data of new columns, can be used to template additional columns by adding to the end but before the return
   // Calculate and add the PV as a new column
@@ -87,7 +87,7 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
     double PV = result(i, 3);
     double M = result(i, 1);
     double ytms = result(i, 5);
-    int m = 1; // Periods per year (hardcoded, replace with user input if needed)
+    int m = 2; // Periods per year (hardcoded, replace with user input if needed)
     double PricePlus = bond_price(ytms + 0.0001, coupon_rate, M, m);  // Increment YTM by 0.0001 for PricePlus
     double PriceMinus = bond_price(ytms - 0.0001, coupon_rate, M, m); // Decrement YTM by 0.0001 for PriceMinus
     result(i, 6) = PricePlus;
@@ -101,18 +101,17 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
     double PriceMinus = result(i, 7);
     double Delta = (PricePlus - PriceMinus) / (2 * 0.01) / 10000; // StepSize is 0.0001
     double Gamma = 0.5 * ((PricePlus - 2 * result(i, 3) + PriceMinus) / pow(0.01, 2)) / pow(10000, 2); // StepSize is 0.0001
-    result(i, 8) = Delta; // Overwrites previous PricePlus
-    result(i, 9) = Gamma; // Overwrites previous PriceMinus
+    result(i, 6) = Delta; // Overwrites previous PricePlus
+    result(i, 7) = Gamma; // Overwrites previous PriceMinus
   }
   
   // Calculate and add Duration as a new column
   for (int i = 0; i < result.nrow(); i++) {
     double ytm = result(i, 5); // Yield to maturity
     double T2M = result(i, 1); // Time to maturity
-    int m = 1; // Periods per year (hardcoded, replace with user input if needed)
-    
+    int m = 2; // Periods per year (hardcoded, replace with user input if needed)
     double duration = bond_duration(ytm, coupon_rate, T2M, m); // Calculate bond duration
-    result(i, 10) = duration; // Add duration to the result matrix
+    result(i, 8) = duration; // Add duration to the result matrix
   }
   
   return result; // Return the modified matrix with the added price column
