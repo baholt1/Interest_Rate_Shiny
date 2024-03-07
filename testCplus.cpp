@@ -1,15 +1,13 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// [[Rcpp::export]]
 // Function to calculate yield to maturity
 double ytm(double PV, double M, double C) {
-  double ytm_1 = (C*100 + (100 - PV) / M);
+  double ytm_1 = (C + (100 - PV) / M);
   double ytm_2 = (100 + PV) / 2.0;
   return ytm_1 / ytm_2;
 }
 
-// [[Rcpp::export]]
 // Function to calculate bond price based on yield to maturity, coupon rate, time to maturity, and periods per year
 double bond_price(double ytm, double C, double T2M, int m) {
   double price = 0.0;
@@ -36,7 +34,7 @@ List bond_duration_convexity(double ytm, double C, double T2M, int m) {
     double cf_value = (i == T2M * m - 1) ? (C * 100 / m + 100) : (C * 100 / m);
     double disc_factor = 1 / pow((1 + ytm / m), t_years);
     duration += (cf_value * disc_factor * t_years) / price;
-    convexity += (cf_value * t_years * (t_years + 1)) / (price * pow(1 + ytm / m, (i + 1) * period));
+    convexity += (cf_value * t_years * (t_years + 1)) / (price * pow(1 + ytm / m, t_years));
   }
   List result = List::create(Named("duration") = duration, Named("convexity") = convexity);
   return result;
