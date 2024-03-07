@@ -1,50 +1,12 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// Function to calculate the present value
+// Function to calculate yield to maturity
 // [[Rcpp::export]]
-double present_value(double rate, double price, double face_value, double coupon_payment, int years_to_maturity, int frequency) {
-  int periods = years_to_maturity * frequency;
-  double coupon = coupon_payment * (frequency / 2.0);  
-  
-  // PV coupon
-  double pv_coupons = 0.0;
-  for (int i = 1; i <= periods; ++i) {
-    pv_coupons += coupon / pow(1 + rate / frequency, i);
-  }
-  
-  // PV face value 
-  double pv_face_value = face_value / pow(1 + rate / frequency, periods);
-  
-  // total PV 
-  double pv_total = pv_coupons + pv_face_value;
-  
-  // difference of bond price and present value 
-  double diff = price - pv_total;
-  
-  return diff;
-}
-
-// [[Rcpp::export]]
-// Function to calculate YTM
-double calculate_YTM(double price, double face_value, double coupon_payment, int years_to_maturity, int frequency = 1) {
-  // Wrapper function for uniroot
-  Environment stats("package:stats");
-  Function uniroot = stats["uniroot"];
-  
-  // Calculate YTM
-  NumericVector interval = NumericVector::create(0, 1);
-  List uniroot_result = as<List>(uniroot(_["f"] = Function("present_value"), 
-                                         _["interval"] = interval,
-                                         _["price"] = price,
-                                         _["face_value"] = face_value,
-                                         _["coupon_payment"] = coupon_payment,
-                                         _["years_to_maturity"] = years_to_maturity,
-                                         _["frequency"] = frequency));
-  double ytm = as<double>(uniroot_result["root"]);
-  
-  // Convert YTM to percentage
-  return ytm * frequency * 100.0;
+double ytm(double PV, double M, double C) {
+  double ytm_1 = (C + (100 - PV) / M);
+  double ytm_2 = (100 + PV) / 2.0;
+  return ytm_1 / ytm_2;
 }
 
 // [[Rcpp::export]]
@@ -85,7 +47,7 @@ NumericVector calculate_bond_duration_and_convexity_cpp(double coupon_rate, int 
 // [[Rcpp::export]]
 NumericMatrix mycppFunction(NumericMatrix x) {
   // Resize the input matrix to accommodate the new column for price
-  NumericMatrix result(x.nrow(), x.ncol() + 2); // XX: add 1 for each additional column
+  NumericMatrix result(x.nrow(), x.ncol() + 3); // XX: add 1 for each additional column
   
   // Copy the existing columns to the result matrix
   for (int i = 0; i < x.nrow(); i++) {
@@ -95,14 +57,14 @@ NumericMatrix mycppFunction(NumericMatrix x) {
   }
   
   // XX: add each additional column name to the end of this function
-  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "price", "changeBPS");
+  colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "value", "changeBPS", "ytm");
   
   // XX: following are calculations for the data of new columns, can be used to template additional columns by adding to the end
-  // Calculate and add the price as a new column
+  // Calculate and add the PV as a new column
   for (int i = 0; i < result.nrow(); i++) {
     double rate = result(i, 2); // Assuming rate is in column 2
-    double price = rate * 100.0;
-    result(i, 3) = price; // Add the calculated price as the fourth column
+    double value = 100 - rate * 100.0;
+    result(i, 3) = value; // Add the calculated price as the 4th column
   }
   
   // Calculate and add change in BPS as a new column
@@ -110,7 +72,18 @@ NumericMatrix mycppFunction(NumericMatrix x) {
     double rate_prev = result(i - 1, 2);
     double rate_cur = result(i, 2);
     double changeBPS = (rate_cur - rate_prev) * 10000;
-    result(i, result.ncol() - 1) = changeBPS; // Add change in BPS as the last column
+    result(i, 4) = changeBPS; // Add change in BPS as the 5th column
+  }
+  
+  // Hardcoded value for C, MUST BE CHANGED TO IMPLEMENT USER INPUT
+  double C = 0.05;
+  
+  // Calculate the yield to maturity and add it as a new column
+  for (int i = 0; i < result.nrow(); i++) {
+    double PV = result(i, 3);
+    double M = result(i, 1);
+    double ytms = ytm(PV, M, C);
+    result(i, 5) = ytms;
   }
   
   return result; // Return the modified matrix with the added price column
