@@ -4,75 +4,91 @@ server <- function(input, output) {
   coupon <- reactive({input$coupon})
   T2M <- reactive({input$T2M})
   step <- 0.0001  # in bps
-
-  bondPrices <- reactive({
-    dplyr::tibble(yield = round(seq(0.025, 0.075, step), 4)) %>%
-    dplyr::mutate(price = mapply(RTL::bond,
-                                 ytm = yield,
-                                 C = input$coupon,
-                                 T2M = input$T2M),
-                  pricePlus = mapply(RTL::bond,
-                                     ytm = yield + step,
-                                     C = input$coupon,
-                                     T2M = input$T2M),
-                  priceMinus = mapply(RTL::bond,
-                                      ytm = yield - step,
-                                      C = input$coupon,
-                                      T2M = input$T2M))
-  })
-
-  priceBond <- reactive({
-    function(coupon, maturity) {
-    dplyr::tibble(yield = round(seq(0.025, 0.075, step), 4)) %>%
-    dplyr::mutate(price = mapply(RTL::bond,
-                                  ytm = yield,
-                                  C = input$coupon,
-                                  T2M = input$T2M),
-                    pricePlus = mapply(RTL::bond,
-                                  ytm = yield + step,
-                                  C = input$coupon,
-                                  T2M = input$T2M),
-                    priceMinus = mapply(RTL::bond,
-                                  ytm = yield - step,
-                                  C = input$coupon,
-                                  T2M = input$T2M))
-    }
-  })
-
-## the above function and the mapping below (unsliced and with all rate maturities) is what we have to do with C++
-  testData <- reactive({
-    rateData %>% 
-    dplyr::slice(1:5) %>% 
-    dplyr::mutate(bondPrice = purrr::map2(rate, maturity, priceBond())) %>% 
-    tidyr::unnest(cols = bondPrice)
+  
+  calculatedData <- reactive({mycppFunction(x = as.matrix(rateData %>% mutate(date = as.numeric(date))), 0.05) %>%
+    ## conversion back to data frame and grouped
+    dplyr::as_tibble(res) %>%
+    dplyr::mutate(date = as.Date(date)) %>%
+    dplyr::group_by(maturity)
   })
  
   output$table <- shiny::renderDataTable({
-    testData()
+    calculatedData()
   }) 
 
   
-  output$plots <- renderPlot({
-    # Check which options are selected in the checkbox group
-    plot_type <- input$greeks
-    if (length(plot_type) == 0) {
-      return(NULL)
-    }
-
-
-    # Generate plots based on the selected options
-    plot_list <- lapply(plot_type, function(type) { 
-      switch(
-        type,
-        duration = random_ggplot("bar"),     # Replace with the appropriate pre-made chart function
-        convexity = random_ggplot("histogram"),   # Replace with the appropriate pre-made chart function
-        oth1 = random_ggplot("dotplot"),             # Replace with the appropriate pre-made chart function
-        oth2 = random_ggplot("boxplot")              # Replace with the appropriate pre-made chart function
-      )
-    })
-    # Combine multiple plots into a single plot
-    grid.arrange(grobs = plot_list, ncol = 2)  # Adjust the number of columns as needed
+  rateFig <- reactive({
+    fig1 <- calculatedData() %>% 
+      dplyr::mutate(maturity = as.character(maturity)) %>% 
+      ggplot(aes(x = date, y = rate, col = maturity)) + 
+      geom_line() +
+      theme_minimal() + 
+      theme(axis.line = element_line(color = "black"), 
+            axis.ticks = element_line(color = "black"), 
+            legend.title = element_text(color = "black", size = 10, face = "bold"),
+            axis.title.x = element_text(color = "black", size = 10), 
+            axis.title.y = element_text(color = "black", size = 10)) + 
+      scale_color_discrete(name = "Maturities") + 
+      labs(x = "Time", y = "Interest Rate")
+    fig1 <- ggplotly(fig1)
+    fig1
   })
+  
+  changeFig <- reactive({
+    fig2 <- calculatedData() %>% 
+      dplyr::mutate(maturity = as.character(maturity)) %>% 
+      ggplot(aes(x = date, y = changeBPS, col = maturity)) +
+      geom_point() +
+      theme_minimal() + 
+      theme(axis.line = element_line(color = "black"), 
+            axis.ticks = element_line(color = "black"), 
+            legend.title = element_text(color = "black", size = 10, face = "bold"),
+            axis.title.x = element_text(color = "black", size = 10), 
+            axis.title.y = element_text(color = "black", size = 10)) + 
+      scale_color_discrete(name = "Maturities") + 
+      labs(x = "Time", y = "Price Change in Basis Points")
+    fig2 <- ggplotly(fig2)
+    fig2
+  })
+  
+  deltaFig <- reactive({
+    fig3 <- calculatedData() %>% 
+      dplyr::mutate(maturity = as.character(maturity)) %>% 
+      ggplot(aes(x = date, y = delta, col = maturity)) + 
+      geom_line() +
+      theme_minimal() + 
+      theme(axis.line = element_line(color = "black"), 
+            axis.ticks = element_line(color = "black"), 
+            legend.title = element_text(color = "black", size = 10, face = "bold"),
+            axis.title.x = element_text(color = "black", size = 10), 
+            axis.title.y = element_text(color = "black", size = 10)) + 
+      scale_color_discrete(name = "Maturities") + 
+      labs(x = "Time", y = "Delta")
+    fig3 <- ggplotly(fig3)
+    fig3
+  })
+  
+  gammaFig <- reactive({
+    fig4 <- calculatedData() %>% 
+      dplyr::mutate(maturity = as.character(maturity)) %>% 
+      ggplot(aes(x = date, y = gamma, col = maturity)) + 
+      geom_line() +
+      theme_minimal() + 
+      theme(axis.line = element_line(color = "black"), 
+            axis.ticks = element_line(color = "black"), 
+            legend.title = element_text(color = "black", size = 10, face = "bold"),
+            axis.title.x = element_text(color = "black", size = 10), 
+            axis.title.y = element_text(color = "black", size = 10)) + 
+      scale_color_discrete(name = "Maturities") + 
+      labs(x = "Time", y = "Gamma")
+    fig4 <- ggplotly(fig4)
+    fig4
+  })
+  
+  output$plot1 <- renderPlotly({rateFig()})
+  output$plot2 <- renderPlotly({changeFig()})
+  output$plot3 <- renderPlotly({deltaFig()})
+  output$plot4 <- renderPlotly({gammaFig()})
 
   
 }

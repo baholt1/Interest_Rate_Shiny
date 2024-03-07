@@ -32,18 +32,12 @@ navbarPage("Interest Rates",
           "userrate",
           "Choose a Duration:",
           choices = tickers
-        ),
-        checkboxGroupInput(
-          "greeks",
-          "Choose your risk appetite:",
-          c("Rates" = "rates",
-            "Change in Basis Points" = "changeBPS",
-            "Delta" = "delta",
-            "Gamma" = "gamma"),
-          selected = "rates"),
-          ),
+        )),
       mainPanel(
-        plotOutput("plots")
+        plotlyOutput("plot1"),
+        plotlyOutput("plot2"),
+        plotlyOutput("plot3"),
+        plotlyOutput("plot4")
       ),
       )
     ),

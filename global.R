@@ -34,5 +34,4 @@ calculatedData <- mycppFunction(x = as.matrix(rateData %>% mutate(date = as.nume
   dplyr::mutate(date = as.Date(date)) %>%
   dplyr::group_by(maturity)
 
-
 ## loading a function takes the grand majority of the loading time, meaning ideal app performance is achieved with all calculations done in a single C++ file.
