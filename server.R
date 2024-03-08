@@ -64,8 +64,7 @@ server <- function(input, output) {
       scale_color_discrete(name = "Maturities") + 
       labs(x = "Time",
            y = "Delta",
-           title = "Delta",
-           subtitle = "Delta represents the sensitivity of the bond to changes in the interest rate")
+           title = "Delta")
     fig3 <- ggplotly(fig3)
     fig3
   })
