@@ -1,9 +1,4 @@
 server <- function(input, output) {
-
-  ## these values are user entries in the app
-  coupon <- reactive({input$coupon})
-  T2M <- reactive({input$T2M})
-  step <- 0.0001  # in bps
   
   calculatedData <- reactive({mycppFunction(x = as.matrix(rateData %>% mutate(date = as.numeric(date))), 0.05) %>%
     ## conversion back to data frame and grouped
@@ -89,6 +84,12 @@ server <- function(input, output) {
   output$plot2 <- renderPlotly({changeFig()})
   output$plot3 <- renderPlotly({deltaFig()})
   output$plot4 <- renderPlotly({gammaFig()})
-
   
+  
+  output$dtframe <- DT::renderDataTable({
+    filtered_data <- calculatedData[calculatedData$maturity %in% input$maturity, ]
+    DT::datatable(filtered_data)
+  })
+  
+
 }

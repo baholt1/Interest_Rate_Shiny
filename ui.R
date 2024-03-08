@@ -1,43 +1,42 @@
-navbarPage("Interest Rates",
-           theme = shinytheme('yeti'),
-  tabPanel("Historic Information",
-    sidebarLayout(
-      sidebarPanel(),
-    mainPanel(plotlyOutput("plot1"),
-              plotlyOutput("plot2"),
-              plotlyOutput("plot3"),
-              plotlyOutput("plot4"))
+navbarPage(
+  "Interest Rates",
+  theme = shinytheme('yeti'),
+  tabPanel(
+    "Historic Information",
+    mainPanel(
+      plotlyOutput("plot1"),
+      plotlyOutput("plot2"),
+      plotlyOutput("plot3"),
+      plotlyOutput("plot4")
     )
   ),
-  tabPanel("Risk Appetite",
+  tabPanel(
+    "Risk Appetite",
     sidebarLayout(
       sidebarPanel(
         selectInput(
           "userrate",
           "Choose a Duration:",
-          choices = tickers
-        )),
-      mainPanel(
+          choices = tickers 
+        )
       ),
+      mainPanel(
       )
-    ),
-  tabPanel("Portfolio",
-           sidebarLayout(
-             sidebarPanel(
-               sliderInput(
-                 "coupon",
-                 "Coupon Rates:",
-                 min = 0.01,
-                 max = 0.10,
-                 value = 0.05),
-               sliderInput(
-                 "T2M",
-                 "Time to Maturity:",
-                 min = 1,
-                 max = 30,
-                 value = 10),
-             ),
-             mainPanel()
-          )
     )
+  ),
+  tabPanel(
+    "Portfolio",
+    sidebarLayout(
+      sidebarPanel(
+        checkboxGroupInput(
+          "maturity",
+          "Select the Maturity:",
+          choices = unique(calculatedData$maturity),
+          selected = unique(calculatedData$maturity)
+        )
+      ),
+      dataTableOutput("dtframe"
+      )
+    )
+  )
 )

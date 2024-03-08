@@ -7,6 +7,7 @@ library(shinipsum)
 library(plotly)
 library(Rcpp)
 library(gridExtra)
+library(DT)
 
 # Load the C++ function
 sourceCpp('testCplus.cpp')
