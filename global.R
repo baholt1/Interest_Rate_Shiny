@@ -25,13 +25,12 @@ rateData <- tidyquant::tq_get(tickers,
                 maturity = as.numeric(stringr::str_replace_all(symbol, "(?i)DGS", "")),
                 rate = price / 100, .keep = "none")
 
-## regardless of complexity and length, we can add any number of additional columns here in R
-## as long as they do not call functions (i.e. dplyr::lag)
-## ensures fastest execution time
+
 calculatedData <- mycppFunction(x = as.matrix(rateData %>% mutate(date = as.numeric(date))), 0.05) %>%
-  ## conversion back to data frame and grouped
   dplyr::as_tibble(res) %>%
   dplyr::mutate(date = as.Date(date)) %>%
   dplyr::group_by(maturity)
 
-## loading a function takes the grand majority of the loading time, meaning ideal app performance is achieved with all calculations done in a single C++ file.
+
+
+

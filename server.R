@@ -24,7 +24,9 @@ server <- function(input, output) {
             axis.title.x = element_text(color = "black", size = 10), 
             axis.title.y = element_text(color = "black", size = 10)) + 
       scale_color_discrete(name = "Maturities") + 
-      labs(x = "Time", y = "Interest Rate")
+      labs(x = "Time", 
+           y = "Interest Rate", 
+           title = "Change in Interest Rates Over Time")
     fig1 <- ggplotly(fig1)
     fig1
   })
@@ -41,7 +43,9 @@ server <- function(input, output) {
             axis.title.x = element_text(color = "black", size = 10), 
             axis.title.y = element_text(color = "black", size = 10)) + 
       scale_color_discrete(name = "Maturities") + 
-      labs(x = "Time", y = "Price Change in Basis Points")
+      labs(x = "Time",
+           y = "Price Change in Basis Points",
+           title = "Change in Basis Points")
     fig2 <- ggplotly(fig2)
     fig2
   })
@@ -58,7 +62,10 @@ server <- function(input, output) {
             axis.title.x = element_text(color = "black", size = 10), 
             axis.title.y = element_text(color = "black", size = 10)) + 
       scale_color_discrete(name = "Maturities") + 
-      labs(x = "Time", y = "Delta")
+      labs(x = "Time",
+           y = "Delta",
+           title = "Delta",
+           subtitle = "Delta represents the sensitivity of the bond to changes in the interest rate")
     fig3 <- ggplotly(fig3)
     fig3
   })
@@ -75,7 +82,9 @@ server <- function(input, output) {
             axis.title.x = element_text(color = "black", size = 10), 
             axis.title.y = element_text(color = "black", size = 10)) + 
       scale_color_discrete(name = "Maturities") + 
-      labs(x = "Time", y = "Gamma")
+      labs(x = "Time",
+           y = "Gamma", 
+           title = "Gamma")
     fig4 <- ggplotly(fig4)
     fig4
   })
@@ -85,11 +94,45 @@ server <- function(input, output) {
   output$plot3 <- renderPlotly({deltaFig()})
   output$plot4 <- renderPlotly({gammaFig()})
   
-  
-  output$dtframe <- DT::renderDataTable({
-    filtered_data <- calculatedData[calculatedData$maturity %in% input$maturity, ]
-    DT::datatable(filtered_data)
+  ytm <- function(PVs, Ms, C) {
+    ytms <- numeric(length(PVs))
+    for (i in 1:length(PVs)) {
+      ytm_1 <- (C + (100 - PVs[i]) / Ms[i])
+      ytm_2 <- (100 + PVs[i]) / 2
+      ytms[i] <- ytm_1 / ytm_2
+    }
+    return(ytms)
+  }
+
+  ytms_reactive <- reactive({
+    C <- c(5, 5, 5, 5)
+    Ms <- input$maturity
+    
+    series <- ifelse(Ms == 2, "DGS2",
+                     ifelse(Ms == 5, "DGS5",
+                            ifelse(Ms == 10, "DGS10",
+                                   ifelse(Ms == 30, "DGS30", NA))))
+    
+    PVs <- tq_get(series, 
+                  get = "economic.data", 
+                  from = "2024-01-01", 
+                  to = Sys.Date()) %>% 
+      group_by(symbol) %>% 
+      mutate(value = 100 - price) %>% 
+      pivot_wider(names_from = symbol, values_from = value) %>% 
+      filter(date == "2024-03-04")
+    
+    data_long <- pivot_longer(PVs, cols = -c(date, price), names_to = "bond", values_to = "value") %>% 
+      na.omit() 
+    
+    PVs <- data_long$value
+    
+    ytms <- ytm(PVs, Ms, C)
+    data.frame(Bond = data_long$bond, YTM = ytms)
   })
   
+  output$dtframe <- DT::renderDataTable({
+    datatable(ytms_reactive())
+  })
 
 }

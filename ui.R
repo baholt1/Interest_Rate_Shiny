@@ -4,6 +4,9 @@ navbarPage(
   tabPanel(
     "Historic Information",
     mainPanel(
+      helpText("Note: All graphs are interactive. To zoom in on a time frame, drag the box around the period.",
+               "All face prices are assumed to be 100",
+               "All calculations are based on period two"),
       plotlyOutput("plot1"),
       plotlyOutput("plot2"),
       plotlyOutput("plot3"),
@@ -11,14 +14,9 @@ navbarPage(
     )
   ),
   tabPanel(
-    "Risk Appetite",
+    "Information",
     sidebarLayout(
       sidebarPanel(
-        selectInput(
-          "userrate",
-          "Choose a Duration:",
-          choices = tickers 
-        )
       ),
       mainPanel(
       )
