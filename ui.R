@@ -33,7 +33,8 @@ navbarPage(
     mainPanel(
       tableOutput("dtframe"
       ),
-      textOutput("portfolio_ytm")
+      textOutput("portfolio_ytm"),
+      textOutput("total_weight")
       )
     )
   )

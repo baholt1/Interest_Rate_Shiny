@@ -174,7 +174,9 @@ server <- function(input, output) {
     
     portfolio_ytm <- weighted.mean(combined_results$Weighted_YTM, w = combined_results$Weight, na.rm = TRUE)
     
-    list(result_df = combined_results, portfolio_ytm = portfolio_ytm)
+    total_weight <- sum(combined_results$Weight)
+    
+    list(result_df = combined_results, portfolio_ytm = portfolio_ytm, total_weight = total_weight)
   })
   
   output$dtframe <- renderTable({
@@ -184,5 +186,9 @@ server <- function(input, output) {
   output$portfolio_ytm <- renderText({
     paste("Portfolio YTM (Weighted):", sprintf("%.2f%%", ytms_reactive()$portfolio_ytm))
   }) 
+  
+  output$total_weight <- renderText({
+    paste("Total Weight of Portfolio:", ytms_reactive()$total_weight)
+  })
   
 }
