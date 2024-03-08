@@ -1,7 +1,4 @@
-library(tidyverse)
 library(tidyquant)
-library(purrr)
-library(shiny)
 library(shinythemes)
 library(shinipsum)
 library(plotly)
@@ -24,13 +21,3 @@ rateData <- tidyquant::tq_get(tickers,
   dplyr::mutate(date,
                 maturity = as.numeric(stringr::str_replace_all(symbol, "(?i)DGS", "")),
                 rate = price / 100, .keep = "none")
-
-
-calculatedData <- mycppFunction(x = as.matrix(rateData %>% mutate(date = as.numeric(date))), 0.05) %>%
-  dplyr::as_tibble(res) %>%
-  dplyr::mutate(date = as.Date(date)) %>%
-  dplyr::group_by(maturity)
-
-
-
-
