@@ -9,10 +9,12 @@ navbarPage(
                "All calculations are based on period two."),
       plotlyOutput("plot1"),
       plotlyOutput("plot2"),
-      helpText("Delta represents the sensitivity of the bond to changes in the interest rate"),
       plotlyOutput("plot3"),
-      helpText("Gamma measures how the duration of a bond changes as a result of interest rates"),
-      plotlyOutput("plot4")
+      helpText("Delta represents the sensitivity of the bond to changes in the interest rate."),
+      plotlyOutput("plot4"),
+      helpText("Gamma measures how the duration of a bond changes as a result of interest rates."),
+      plotlyOutput("plot5"),
+      helpText("Convexity measures the curvature of the relationship between bond prices and changes in interest rates.")
     )
   ),
   tabPanel(

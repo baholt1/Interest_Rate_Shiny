@@ -88,10 +88,30 @@ server <- function(input, output) {
     fig4
   })
   
+  convexityFig <- reactive({
+    fig5 <- calculatedData() %>% 
+      dplyr::mutate(maturity = as.character(maturity)) %>% 
+      ggplot(aes(x = date, y = convexity, col = maturity)) + 
+      geom_line() +
+      theme_minimal() + 
+      theme(axis.line = element_line(color = "black"), 
+            axis.ticks = element_line(color = "black"), 
+            legend.title = element_text(color = "black", size = 10, face = "bold"),
+            axis.title.x = element_text(color = "black", size = 10), 
+            axis.title.y = element_text(color = "black", size = 10)) + 
+      scale_color_discrete(name = "Maturities") + 
+      labs(x = "Time",
+           y = "Convexity", 
+           title = "Convexity")
+    fig5 <- ggplotly(fig5)
+    fig5
+  })
+  
   output$plot1 <- renderPlotly({rateFig()})
   output$plot2 <- renderPlotly({changeFig()})
   output$plot3 <- renderPlotly({deltaFig()})
   output$plot4 <- renderPlotly({gammaFig()})
+  output$plot5 <- renderPlotly({convexityFig()})
   
   ytm <- function(PVs, Ms, C) {
     ytms <- numeric(length(PVs))
