@@ -32,7 +32,8 @@ server <- function(input, output) {
   })
   
   changeFig <- reactive({
-    fig2 <- calculatedData() %>% 
+    fig2 <- calculatedData() %>%
+      dplyr::filter(changeBPS < 100) %>% 
       dplyr::mutate(maturity = as.character(maturity)) %>% 
       ggplot(aes(x = date, y = changeBPS, col = maturity)) +
       geom_point() +
