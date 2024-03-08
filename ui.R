@@ -28,7 +28,7 @@ shiny::navbarPage(
   ),
   shiny::tabPanel(
     "Historic Information",
-    shiny::headerPanel("Historic Information for each Maturity"),
+    shiny::headerPanel("Historic Information For Each Maturity"),
     shiny::helpText("All graphs are interactive. To zoom in on a time frame, drag the box around the period. To select a maturity click that maturity on the right hand side of the graph. To unselect, click the maturity again."),
     shiny::mainPanel(
       shiny::helpText("Note: All face prices are assumed to be 100.",
