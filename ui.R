@@ -1,40 +1,42 @@
-navbarPage(
+shiny::navbarPage(
   "Interest Rates",
   theme = shinytheme('yeti'),
-  tabPanel(
+  shiny::tabPanel(
     "Historic Information",
-    mainPanel(
-      helpText("Note: All graphs are interactive. To zoom in on a time frame, drag the box around the period.",
+    tags$style(type="text/css",
+               ".shiny-output-error { visibility: hidden; }",
+               ".shiny-output-error:before { visibility: hidden; }"),
+    shiny::mainPanel(
+      shiny::helpText("Note: All graphs are interactive. To zoom in on a time frame, drag the box around the period.",
                "All face prices are assumed to be 100.",
                "All calculations are based on period two."),
-      plotlyOutput("plot1"),
-      plotlyOutput("plot2"),
-      plotlyOutput("plot3"),
-      helpText("Delta represents the sensitivity of the bond to changes in the interest rate."),
-      plotlyOutput("plot4"),
-      helpText("Gamma measures how the duration of a bond changes as a result of interest rates."),
-      plotlyOutput("plot5"),
-      helpText("Convexity measures the curvature of the relationship between bond prices and changes in interest rates.")
+      plotly::plotlyOutput("plot1"),
+      plotly::plotlyOutput("plot2"),
+      plotly::plotlyOutput("plot3"),
+      shiny::helpText("Delta represents the sensitivity of the bond to changes in the interest rate."),
+      plotly::plotlyOutput("plot4"),
+      shiny::helpText("Gamma measures how the duration of a bond changes as a result of interest rates."),
+      plotly::plotlyOutput("plot5"),
+      shiny::helpText("Convexity measures the curvature of the relationship between bond prices and changes in interest rates.")
     )
   ),
-  tabPanel(
+  shiny::tabPanel(
     "Portfolio",
-    sidebarLayout(
-      sidebarPanel(
-        checkboxGroupInput(
+    shiny::sidebarLayout(
+      shiny::sidebarPanel(
+        shiny::checkboxGroupInput(
           "maturity",
           "Select the Maturity:",
           choices = unique(calculatedData$maturity),
-          selected = head(unique(calculatedData$maturity), 1)
+          selected = head(unique(calculatedData$maturity), 3)
         ), 
-        uiOutput("weight_inputs"),
-        actionButton("calculate", "Calculate")
+        shiny::uiOutput("weight_inputs"),
+        shiny::actionButton("calculate", "Calculate")
       ),
-    mainPanel(
-      tableOutput("dtframe"
-      ),
-      textOutput("portfolio_ytm"),
-      textOutput("total_weight")
+      shiny::mainPanel(
+        shiny::tableOutput("dtframe"),
+        shiny::textOutput("portfolio_ytm"),
+        shiny::textOutput("total_weight")
       )
     )
   )
