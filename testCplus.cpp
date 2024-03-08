@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// [[Rcpp::export]]
 // Function to calculate yield to maturity
 double ytm(double PV, double M, double C) {
   double ytm_1 = (C + (100 - PV) / M);
@@ -20,7 +21,6 @@ double bond_price(double ytm, double C, double T2M, int m) {
   return price;
 }
 
-// [[Rcpp::export]]
 // Function to calculate bond duration and convexity
 List bond_duration_convexity(double ytm, double C, double T2M, int m) {
   double duration = 0.0;
@@ -40,14 +40,11 @@ List bond_duration_convexity(double ytm, double C, double T2M, int m) {
   return result;
 }
 
-// Noteworthy metric: time to load with just mycppFunction: 3.5 seconds, with everything: 3.9 seconds
-// Calculation timings for any functions so far in C++ are near instant and negligible
-
-// Notes with 'XX' indicate areas that need to be changed in the process of adding another column of data (3 of them total)
 // [[Rcpp::export]]
 NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
+  
   // Resize the input matrix to accommodate the new column for price
-  NumericMatrix result(x.nrow(), x.ncol() + 7); // XX: add 1 for each additional column
+  NumericMatrix result(x.nrow(), x.ncol() + 7); // Refit input matrix dimensions to intended 
   
   // Copy the existing columns to the result matrix
   for (int i = 0; i < x.nrow(); i++) {
@@ -56,10 +53,10 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
     }
   }
   
-  // XX: add each additional column name to the end of this function
+  // Defining order and column names
   colnames(result) = Rcpp::CharacterVector::create("date", "maturity", "rate", "value", "changeBPS", "ytm", "delta", "gamma", "duration", "convexity");
   
-  // XX: following are calculations for the data of new columns, can be used to template additional columns by adding to the end but before the return
+  // Calculations and insertions for each column to be added
   // Calculate and add the PV as a new column
   for (int i = 0; i < result.nrow(); i++) {
     double rate = result(i, 2); // Assuming rate is in column 2
@@ -96,7 +93,6 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
     result(i, 7) = PriceMinus;
   }
   
-  // Step size of 0.0001 set here, MUST BE CHANGED TO IMPLEMENT USER INPUT
   // Calculate and add Delta and Gamma as new columns
   for (int i = 0; i < result.nrow(); i++) {
     double PricePlus = result(i, 6);
@@ -107,16 +103,14 @@ NumericMatrix mycppFunction(NumericMatrix x, double coupon_rate) {
     result(i, 7) = Gamma; // Overwrites previous PriceMinus
   }
   
-  
   // Calculate and add Duration and Convexity as new columns
   for (int i = 0; i < result.nrow(); i++) {
     double ytm = result(i, 2); // Yield to maturity
     double T2M = result(i, 1); // Time to maturity
-    int m = 2; // Periods per year (hardcoded, replace with user input if needed)
-    List metrics = bond_duration_convexity(ytm, coupon_rate, T2M, m); // Calculate bond metrics
+    int m = 2; // Periods per year
+    List metrics = bond_duration_convexity(ytm, coupon_rate, T2M, m); // Calculations
     result(i, 8) = as<double>(metrics["duration"]); // Add duration to the result matrix
     result(i, 9) = as<double>(metrics["convexity"]); // Add convexity to the result matrix
   }
-  
   return result; // Return the modified matrix with the added price column
 }
