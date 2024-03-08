@@ -117,6 +117,13 @@ server <- function(input, output) {
     ggplotly(fig5)
   })
   
+  output$weight_inputs <- renderUI({
+    req(input$maturity) 
+    lapply(input$maturity, function(mat) {
+      sliderInput(paste0("weight_", mat), label = paste("Weight for", mat, ":"), value = 0, min = 0, max = 1)
+    })
+  })
+  
   ytm <- function(PVs, Ms, C) {
     ytms <- as.numeric(length(PVs))
     for (i in 1:length(PVs)) {
@@ -128,37 +135,54 @@ server <- function(input, output) {
   }
   
   ytms_reactive <- reactive({
+    req(input$maturity, input$calculate)
+    
     C <- c(5, 5, 5, 5, 5, 5, 5, 5)
     Ms <- as.numeric(input$maturity)
     
-    series <- ifelse(Ms == 1, "DGS1",
-                     ifelse(Ms == 2, "DGS2",
-                            ifelse(Ms == 3, "DGS3",
-                                   ifelse(Ms == 5, "DGS5",
-                                          ifelse(Ms == 7, "DGS7",
-                                                 ifelse(Ms == 10, "DGS10",
-                                                        ifelse(Ms == 20, "DGS20",
-                                                               ifelse(Ms == 30, "DGS30", NA))))))))
+    result_list <- list()
     
-    PVs <- tidyquant::tq_get(series, 
-                             get = "economic.data", 
-                             from = "2024-01-01", 
-                             to = Sys.Date()) %>% 
-      dplyr::group_by(symbol) %>% 
-      dplyr::mutate(value = 100 - price) %>% 
-      pivot_wider(names_from = symbol, values_from = value) %>% 
-      dplyr::filter(date == "2024-03-04")
+    for (mat in Ms) {
+      series <- switch(mat, "1" = "DGS1", "2" = "DGS2", "3" = "DGS3", "5" = "DGS5", "7" = "DGS7", "10" = "DGS10", "20" = "DGS20", "30" = "DGS30")
+      
+      PVs <- tidyquant::tq_get(series, 
+                               get = "economic.data", 
+                               from = "2024-01-01", 
+                               to = Sys.Date()) %>% 
+        dplyr::group_by(symbol) %>% 
+        dplyr::mutate(value = 100 - price) %>% 
+        pivot_wider(names_from = symbol, values_from = value) %>% 
+        dplyr::filter(date == "2024-03-04")
+      
+      data_long <- pivot_longer(PVs, cols = -c(date, price), names_to = "bond", values_to = "value") %>% 
+        na.omit() 
+      
+      PVs <- as.numeric(data_long$value)
+      
+      ytms <- ytm(PVs, mat, C)
+      
+      weighted_ytm <- sum(ytms * input[[paste0("weight_", mat)]], na.rm = TRUE) / sum(input[[paste0("weight_", mat)]], na.rm = TRUE)
+      
+      result <- data.frame(Bond = data_long$bond, YTM = ytms, Weight = input[[paste0("weight_", mat)]], Weighted_YTM = weighted_ytm, Maturity = mat)
+      
+      print(length(result$Bond))
+      
+      result_list[[mat]] <- result
+    }
     
-    data_long <- pivot_longer(PVs, cols = -c(date, price), names_to = "bond", values_to = "value") %>% 
-      na.omit() 
+    combined_results <- do.call(rbind, result_list)
     
-    PVs <- as.numeric(data_long$value)
+    portfolio_ytm <- weighted.mean(combined_results$Weighted_YTM, w = combined_results$Weight, na.rm = TRUE)
     
-    ytms <- ytm(PVs, Ms, C)
-    data.frame(Bond = data_long$bond, YTM = ytms)
+    list(result_df = combined_results, portfolio_ytm = portfolio_ytm)
   })
   
   output$dtframe <- renderTable({
-    ytms_reactive()
+    ytms_reactive()$result_df
   })
+  
+  output$portfolio_ytm <- renderText({
+    paste("Portfolio YTM (Weighted):", sprintf("%.2f%%", ytms_reactive()$portfolio_ytm))
+  }) 
+  
 }

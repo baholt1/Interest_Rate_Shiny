@@ -25,11 +25,16 @@ navbarPage(
           "maturity",
           "Select the Maturity:",
           choices = unique(calculatedData$maturity),
-          selected = unique(calculatedData$maturity)
-        )
+          selected = head(unique(calculatedData$maturity), 1)
+        ), 
+        uiOutput("weight_inputs"),
+        actionButton("calculate", "Calculate")
       ),
+    mainPanel(
       tableOutput("dtframe"
+      ),
+      textOutput("portfolio_ytm")
       )
     )
   )
-)
+)  
