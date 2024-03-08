@@ -125,13 +125,17 @@ server <- function(input, output) {
   }
 
   ytms_reactive <- reactive({
-    C <- c(5, 5, 5, 5)
+    C <- c(5, 5, 5, 5, 5, 5, 5, 5)
     Ms <- input$maturity
     
-    series <- ifelse(Ms == 2, "DGS2",
-                     ifelse(Ms == 5, "DGS5",
-                            ifelse(Ms == 10, "DGS10",
-                                   ifelse(Ms == 30, "DGS30", NA))))
+    series <- ifelse(Ms == 1, "DGS1",
+                  ifelse(Ms == 2, "DGS2",
+                    ifelse(Ms == 3, "DGS3",
+                      ifelse(Ms == 5, "DGS5",
+                        ifelse(Ms == 7, "DGS7",
+                          ifelse(Ms == 10, "DGS10",
+                            ifelse(Ms == 20, "DGS20",
+                              ifelse(Ms == 30, "DGS30", NA))))))))
     
     PVs <- tq_get(series, 
                   get = "economic.data", 
