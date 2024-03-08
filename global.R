@@ -1,10 +1,9 @@
 library(tidyquant)
+library(shiny)
 library(shinythemes)
-library(shinipsum)
 library(plotly)
 library(Rcpp)
 library(gridExtra)
-library(DT)
 library(tidyr)
 
 # Load the C++ function

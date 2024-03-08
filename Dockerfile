@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
     libcairo2-dev \
     libxt-dev
 
-RUN R -e "install.packages(c('tidyverse', 'DT', 'plotly', 'tidyquant', 'purr', 'RTL', 'shinythemes'), dependencies = TRUE, repos = 'https://packagemanager.rstudio.com/cran/latest')"
+RUN R -e "install.packages(c('tidyverse', 'plotly', 'tidyquant', 'purr', 'shinythemes'), dependencies = TRUE, repos = 'https://packagemanager.rstudio.com/cran/latest')"
 
 
 # Install from GitHub repository
