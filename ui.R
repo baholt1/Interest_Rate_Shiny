@@ -28,7 +28,7 @@ navbarPage(
           selected = unique(calculatedData$maturity)
         )
       ),
-      dataTableOutput("dtframe"
+      tableOutput("dtframe"
       )
     )
   )

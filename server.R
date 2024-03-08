@@ -115,7 +115,7 @@ server <- function(input, output) {
   output$plot5 <- renderPlotly({convexityFig()})
   
   ytm <- function(PVs, Ms, C) {
-    ytms <- numeric(length(PVs))
+    ytms <- as.numeric(length(PVs))
     for (i in 1:length(PVs)) {
       ytm_1 <- (C + (100 - PVs[i]) / Ms[i])
       ytm_2 <- (100 + PVs[i]) / 2
@@ -126,7 +126,7 @@ server <- function(input, output) {
 
   ytms_reactive <- reactive({
     C <- c(5, 5, 5, 5, 5, 5, 5, 5)
-    Ms <- input$maturity
+    Ms <- as.numeric(input$maturity)
     
     series <- ifelse(Ms == 1, "DGS1",
                   ifelse(Ms == 2, "DGS2",
@@ -137,26 +137,26 @@ server <- function(input, output) {
                             ifelse(Ms == 20, "DGS20",
                               ifelse(Ms == 30, "DGS30", NA))))))))
     
-    PVs <- tq_get(series, 
+    PVs <- tidyquant::tq_get(series, 
                   get = "economic.data", 
                   from = "2024-01-01", 
                   to = Sys.Date()) %>% 
-      group_by(symbol) %>% 
-      mutate(value = 100 - price) %>% 
+      dplyr::group_by(symbol) %>% 
+      dplyr::mutate(value = 100 - price) %>% 
       pivot_wider(names_from = symbol, values_from = value) %>% 
-      filter(date == "2024-03-04")
+      dplyr::filter(date == "2024-03-04")
     
     data_long <- pivot_longer(PVs, cols = -c(date, price), names_to = "bond", values_to = "value") %>% 
       na.omit() 
     
-    PVs <- data_long$value
+    PVs <- as.numeric(data_long$value)
     
     ytms <- ytm(PVs, Ms, C)
     data.frame(Bond = data_long$bond, YTM = ytms)
   })
   
-  output$dtframe <- DT::renderDataTable({
-    datatable(ytms_reactive())
+  output$dtframe <- renderTable({
+    ytms_reactive()
   })
 
 }
