@@ -2,7 +2,7 @@ shiny::navbarPage(
   "Interest Rates",
   theme = shinytheme('yeti'),
   shiny::tabPanel(
-    "Historic Information",
+    "Historic Bond Information",
     tags$style(type="text/css",
                ".shiny-output-error { visibility: hidden; }",
                ".shiny-output-error:before { visibility: hidden; }"),
@@ -21,7 +21,7 @@ shiny::navbarPage(
     )
   ),
   shiny::tabPanel(
-    "Portfolio",
+    "Bond Portfolio Creation Tool",
     shiny::sidebarLayout(
       shiny::sidebarPanel(
         shiny::checkboxGroupInput(
